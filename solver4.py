@@ -4,7 +4,7 @@ import numpy as np
 class Data:
     def __init__(self, ai: np.ndarray, bi: np.array, zi: np.array, symb: np.array, cond: str):
         # Элементы основной матрицы
-        self.Ai_mtx = ai
+        self.Ai_mtx_ = ai
         
         # Столбец правых частей уравнений
         self.Bi_mtx_ = bi
