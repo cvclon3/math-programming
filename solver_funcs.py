@@ -73,14 +73,15 @@ def add_amega_vars(data, mtx, amegaI):
 
 def add_left_part(mtx, baseI_in_extended_mtx, Bi_mtx_):
     mtx_ = mtx.copy()[1:]
-    arrCA = np.zeros((len(mtx_) + 1, 2), dtype=complex)
+    arrCA = np.zeros((len(mtx_) + 1, 2), dtype=complex).tolist()
 
     for i in range(len(baseI_in_extended_mtx)):
         index_of_one = np.where(mtx_.T[baseI_in_extended_mtx[i]] == 1)[0]
 
         arrCA[i + 1][1] = Bi_mtx_[int(i)]
         arrCA[index_of_one[0] + 1][0] = mtx[0][baseI_in_extended_mtx[i]]
-    print(arrCA)
+    return np.concatenate((arrCA,  mtx), axis=1)
+
 
 
 
@@ -104,6 +105,7 @@ def prepare_data(data: Data) -> Transport:
     mtx = np.vstack((data.Zi_mtx_, extended_mtx))
     print(mtx)
     mtx = add_left_part(mtx, baseI_in_extended_mtx, data.Bi_mtx_)
+    print(mtx)
 
     
 
