@@ -6,12 +6,12 @@ from solver_funcs import prepare_data
 Ai = np.array([
     [1, 0, 1j],
     [0, 0, 0],
-    [0, 2, 1],
+    [0, 1, 0],
 ])
 
 Bi = np.array([2, 8, 1])
-Symb = np.array(['<=', '>=', '<='])
-Cond = 'max'
+Symb = np.array(['=', '=', '='])
+Cond = 'min'
 
 Zi = np.array([3, 2, 3])
 

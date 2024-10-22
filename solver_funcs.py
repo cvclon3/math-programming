@@ -48,16 +48,20 @@ def init_Symb_arr_(data):
         cols = np.zeros(size_)
         if data.Symb_arr_[i] == '>=':
             cols[i] = -1
+            mtx = np.column_stack((mtx, cols))
             data.Zi_mtx_ = np.append(data.Zi_mtx_, 0)
+
         if data.Symb_arr_[i] == '<=':
             cols[i] = 1
+            mtx = np.column_stack((mtx, cols))
             data.Zi_mtx_ = np.append(data.Zi_mtx_, 0)
-        mtx = np.column_stack((mtx, cols))
+
     return mtx
 
 
 
 def add_amega_vars(data, mtx, amegaI):
+    print(mtx.real)
     mtx_ = mtx.copy()
     size_ = amegaI.shape[0]
     vectors_to_find = np.identity(size_)
