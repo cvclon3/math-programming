@@ -10,7 +10,7 @@ Ai = np.array([
 ])
 
 Bi = np.array([2, 8, 1])
-Symb = np.array(['=', '=', '='])
+Symb = np.array(['>=', '>=', '>='])
 Cond = 'min'
 
 Zi = np.array([3, 2, 3])
