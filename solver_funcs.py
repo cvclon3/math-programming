@@ -5,6 +5,7 @@ import numpy as np
 def find_base_x(mtx):
     """ 
     Нахождение индексов бозесных переменных
+    гы
     """
     vectors_to_find = np.identity(mtx.shape[0])
     found = np.all(np.isin(mtx.T, vectors_to_find), axis=1)
