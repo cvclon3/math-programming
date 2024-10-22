@@ -37,7 +37,6 @@ def find_base_x(mtx):
 
     return res
 
-
 def init_Symb_arr_(data):
     """
     Определение навых переменных в зависимости от знака
@@ -57,8 +56,6 @@ def init_Symb_arr_(data):
             data.Zi_mtx_ = np.append(data.Zi_mtx_, 0)
 
     return mtx
-
-
 
 def add_amega_vars(data, mtx, amegaI):
     print(mtx.real)
@@ -87,29 +84,33 @@ def add_left_part(mtx, baseI_in_extended_mtx, Bi_mtx_):
     return np.concatenate((arrCA,  mtx), axis=1)
 
 
+def delta_i(arr):
+    for i in range(arr.shape[1] - 1):
+        arrI = 0
+        for j in range(arr.shape[0] - 2):
+            arrI += arr[j + 1][i + 1] * arr[j + 1][0]
+        arr[-1][i + 1] = arrI - arr[0][i + 1]
 
-
-
-
-
+    return arr
 
 
 def prepare_data(data: Data) -> Transport:
     mtx = init_Symb_arr_(data)
-    print(mtx)
+    #Добаавление иксов в зависимости от знака
     baseI = find_base_x(mtx)
-    print(baseI)
+    #Нахождение базесных переменных
     sum = sum_base_vars(mtx, baseI)
     print(sum)
     extended_mtx = add_amega_vars(data, mtx, sum)
-    print(extended_mtx)
-    print(data.Zi_mtx_)
+
     baseI_in_extended_mtx = find_base_x(extended_mtx)
     print(baseI_in_extended_mtx)
     mtx = np.vstack((data.Zi_mtx_, extended_mtx))
     print(mtx)
     mtx = add_left_part(mtx, baseI_in_extended_mtx, data.Bi_mtx_)
-    print(mtx)
+    print(mtx.real)
+    mtx = np.vstack((mtx, np.zeros(mtx.shape[1])))
+    print(delta_i(mtx))
 
     
 
