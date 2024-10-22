@@ -90,7 +90,6 @@ def delta_i(arr):
         for j in range(arr.shape[0] - 2):
             arrI += arr[j + 1][i + 1] * arr[j + 1][0]
         arr[-1][i + 1] = arrI - arr[0][i + 1]
-
     return arr
 
 
