@@ -2,14 +2,41 @@ from solver4 import Data, Transport, Answer, Solver
 import numpy as np
 
 
+
+
+def sum_base_vars(mtx, baseI):
+    """
+    finding sum base variables
+    """
+    sum = np.zeros(mtx.shape[0])
+    for i in baseI:
+        sum = sum + mtx.T[int(i)]
+    return sum
+
 def find_base_x(mtx):
     """ 
     Нахождение индексов бозесных переменных
     """
-    vectors_to_find = np.identity(mtx.shape[0])
-    found = np.all(np.isin(mtx.T, vectors_to_find), axis=1)
-    true_indices = np.where(found)[0]
-    return true_indices
+    cols_size = mtx.shape[1]
+    mtx_ = mtx.copy()
+
+    for i in range(mtx.shape[0]):
+        for j in range(mtx.shape[1]):
+            if mtx[i, j] != 0 and mtx[i, j] != 1:
+                mtx_[i, j] = np.inf
+    mtx_ = mtx_.T
+    res = np.array([], dtype=int)
+    sum = np.zeros(mtx.shape[0])
+    ones = np.ones(mtx.shape[0])
+    for i in range(cols_size):
+        sum_in_cols = np.sum(mtx_[i])
+        if sum_in_cols == 1:
+            if np.all(sum + mtx_[int(i)] <= ones):
+                res = np.append(res, i)
+                sum = sum + mtx_[int(i)]
+
+    return res
+
 
 def init_Symb_arr_(data):
     """
@@ -28,19 +55,13 @@ def init_Symb_arr_(data):
         mtx = np.column_stack((mtx, cols))
     return mtx
 
-def sum_base_vars(mtx, baseI):
-    """
-    finding sum base variables
-    """
-    sum = np.zeros(baseI.shape[0])
-    for i in baseI:
-        sum = sum + mtx.T[i]
-    return sum
+
 
 def add_amega_vars(data, mtx, amegaI):
     mtx_ = mtx.copy()
     size_ = amegaI.shape[0]
     vectors_to_find = np.identity(size_)
+
     for i in range(size_):
         if amegaI[i] == 0:
             mtx_ = np.column_stack((mtx_, vectors_to_find[i]))
@@ -52,10 +73,18 @@ def add_amega_vars(data, mtx, amegaI):
 
 def add_left_part(mtx, baseI_in_extended_mtx, Bi_mtx_):
     mtx_ = mtx.copy()[1:]
-    arrCA = [[0], [0]]
-    vectors_to_find = np.identity(mtx.shape[0] - 1)
-    for i in range(baseI_in_extended_mtx.shape[0]):
-        vectors_to_find = np.delete(vectors_to_find, mtx_.T[baseI_in_extended_mtx[i]], axis=0)
+    arrCA = np.zeros((len(mtx_) + 1, 2), dtype=complex).tolist()
+
+    for i in range(len(baseI_in_extended_mtx)):
+        index_of_one = np.where(mtx_.T[baseI_in_extended_mtx[i]] == 1)[0]
+
+        arrCA[i + 1][1] = Bi_mtx_[int(i)]
+        arrCA[index_of_one[0] + 1][0] = mtx[0][baseI_in_extended_mtx[i]]
+    return np.concatenate((arrCA,  mtx), axis=1)
+
+
+
+
 
 
 
@@ -76,6 +105,7 @@ def prepare_data(data: Data) -> Transport:
     mtx = np.vstack((data.Zi_mtx_, extended_mtx))
     print(mtx)
     mtx = add_left_part(mtx, baseI_in_extended_mtx, data.Bi_mtx_)
+    print(mtx)
 
     
 
