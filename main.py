@@ -1,6 +1,6 @@
 import numpy as np
 import solver4 as s
-from solver_funcs import prepare_data
+from solver_init_funcs import prepare_data
 
 
 Ai = np.array([

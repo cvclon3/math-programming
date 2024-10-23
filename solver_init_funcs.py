@@ -1,4 +1,4 @@
-from solver4 import Data, Transport, Answer, Solver
+from solver4 import Data, Transport, Info
 import numpy as np
 
 
@@ -177,6 +177,9 @@ def delta_i(arr):
 
 
 def prepare_data(data: Data) -> Transport:
+    # Создаем класс info который будет содержать основную информацию о задаче
+    info = Info(cond=data.Cond_, ineq_num=data.Ai_mtx_.shape[0], var_num=data.Ai_mtx_.shape[0])
+
     mtx = init_symb_arr_(data)
     #Добаавление иксов в зависимости от знака
     baseI = find_base_x(mtx)
@@ -192,8 +195,11 @@ def prepare_data(data: Data) -> Transport:
     mtx = add_left_part(mtx, baseI_in_extended_mtx, data.Bi_mtx_)
     print(mtx.real)
     mtx = np.vstack((mtx, np.zeros(mtx.shape[1])))
-    print(delta_i(mtx))
+    mtx = delta_i(mtx)
+    print(mtx)
 
-    
+    res = Transport(info=info, table=mtx)
+
+    return res
 
             
