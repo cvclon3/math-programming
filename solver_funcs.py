@@ -4,12 +4,12 @@ import numpy as np
 
 def sum_base_vars(mtx, base_i):
     """
-    Нахождение суммы всех бызесных векторов
+    Нахождение суммы всех базисных векторов
     """
     # Инициализируем нулевой массив с количеством элементов, равным количеству строк в mtx
     sum_ = np.zeros(mtx.shape[0])
 
-    # Проходим по каждому индексу в векторе базесных векторов
+    # Проходим по каждому индексу в векторе базисных векторов
     for i in base_i:
         # Добавляем соответствующий столбец матрицы mtx к сумме
         sum_ = sum_ + mtx.T[int(i)]
@@ -20,7 +20,7 @@ def sum_base_vars(mtx, base_i):
 
 def find_base_x(mtx):
     """ 
-    Нахождение индексов бозесных переменных
+    Нахождение индексов базисных переменных
     """
     # Получаем количество столбцов в матрице
     cols_size = mtx.shape[1]
@@ -68,7 +68,7 @@ def find_base_x(mtx):
 
 def init_symb_arr_(data):
     """
-    Определение навых переменных в зависимости от знака
+    Определение новых переменных в зависимости от знака
     """
     # Копируем матрицу из объекта data
     mtx = data.Ai_mtx_.copy()
@@ -100,14 +100,14 @@ def init_symb_arr_(data):
 
             # Добавляем 0 в опорный план
             data.Zi_mtx_ = np.append(data.Zi_mtx_, 0)
-    # Если символ равен '=', то ничего не делаем
+    # Если символ равен '=', то ничего не делаем.
     # Возвращаем модифицированную матрицу
     return mtx
 
 
 def add_amega_vars(data, mtx, sum_amega_i):
     """
-    Добавление в симплексную таблицу  недастаюших базесных переменных (амега)
+    Добавление в симплексную таблицу недостающих базисных переменных (амега)
     и добавление каэфициентов в опорный план
     """
     # Копируем матрицу для модификации
@@ -135,7 +135,7 @@ def add_amega_vars(data, mtx, sum_amega_i):
     return mtx_
 
 
-def add_left_part(mtx, baseI_in_extended_mtx, Bi_mtx_):
+def add_left_part(mtx, base_i_in_extended_mtx, bi_mtx_):
     # Копируем матрицу mtx без первой строки
     mtx_ = mtx.copy()[1:]
 
@@ -143,15 +143,15 @@ def add_left_part(mtx, baseI_in_extended_mtx, Bi_mtx_):
     arrCA = np.zeros((len(mtx_) + 1, 2)).tolist()
 
     # Проходим по всем индексам базисных переменных
-    for i in range(len(baseI_in_extended_mtx)):
+    for i in range(len(base_i_in_extended_mtx)):
         # Находим индекс строки, где в матрице mtx_ есть 1 в указанном столбце
-        index_of_one = np.where(mtx_.T[baseI_in_extended_mtx[i]] == 1)[0]
+        index_of_one = np.where(mtx_.T[base_i_in_extended_mtx[i]] == 1)[0]
 
         # Заполняем второй элемент массива arrCA значением из Bi_mtx_
-        arrCA[i + 1][1] = Bi_mtx_[int(i)]
+        arrCA[i + 1][1] = bi_mtx_[int(i)]
 
         # Заполняем первый элемент arrCA значением из первой строки mtx
-        arrCA[index_of_one[0] + 1][0] = mtx[0][baseI_in_extended_mtx[i]]
+        arrCA[index_of_one[0] + 1][0] = mtx[0][base_i_in_extended_mtx[i]]
 
     # Возвращаем объединенную матрицу, состоящую из arrCA и mtx
     return np.concatenate((arrCA,  mtx), axis=1)
@@ -159,19 +159,20 @@ def add_left_part(mtx, baseI_in_extended_mtx, Bi_mtx_):
 
 def delta_i(arr):
     """
-    опеределение значений индексной строки
+    Опеределение значений индексной строки
     """
     # Проходим по всем столбцам, кроме последнего
     for i in range(arr.shape[1] - 1):
-        arrI = 0 # Инициализируем переменную для накопления суммы
+        arr_i = 0  # Инициализируем переменную для накопления суммы
 
-        # Проходим по всем строкам, кроме последней
+        # Проходим по всем строкам, кроме первого и последнего
         for j in range(arr.shape[0] - 2):
-            # Накопление суммы произведений элемента и соответствующего первого столбца
-            arrI += arr[j + 1][i + 1] * arr[j + 1][0]
+            # Накопление суммы произведений i-того столбца и соответствующего первого столбца
+            arr_i += arr[j + 1][i + 1] * arr[j + 1][0]
 
-        # Вычисляем значение для последней строки в текущем столбце
-        arr[-1][i + 1] = arrI - arr[0][i + 1]
+        # Вычитаем из суммы элемент соответствующий номеру столбца
+        arr[-1][i + 1] = arr_i - arr[0][i + 1]
+
     # Возвращаем модифицированный массив
     return arr
 
@@ -180,7 +181,7 @@ def prepare_data(data: Data) -> Transport:
     mtx = init_symb_arr_(data)
     #Добаавление иксов в зависимости от знака
     baseI = find_base_x(mtx)
-    #Нахождение базесных переменных
+    #Нахождение базисных переменных
     sum = sum_base_vars(mtx, baseI)
     print(sum)
     extended_mtx = add_amega_vars(data, mtx, sum)
