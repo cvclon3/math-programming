@@ -14,20 +14,44 @@ class Data:
         self.Cond_ = cond
 
 
+class Info:
+    '''
+    Класс содержащий базовые знания о задаче
+    такие как усовие (cond - min/max)
+    кол-во переменных
+    кол-во строк неравенств
+    '''
+    def __init__(self, cond: str, var_num: int, ineq_num: int):
+        # Условие задачи (min or max)
+        self.cond_ = cond
+
+        # Кол-во переменных
+        self.var_num_ = var_num
+
+        # Кол-во неравенств
+        self.ineq_num_ = ineq_num
+
+
 class Transport:
     '''
     Транспортный класс для таблицы - матрицы
     Также содержит флаги, которые говорят о том решена ли М-задача и обычная задача
     '''
-    def __init__(self, table: np.ndarray, is_m_solved: bool = False, is_solved: bool = False):
+    def __init__(self, info: Info, table: np.ndarray, is_m_solved: bool = False, is_solved: bool = False):
+        # Условие задачи (min or max)
+        self.Info_ = info
+
         # Таблица - матрица
-        table_: np.ndarray = np.array()
+        self.table_: np.ndarray = table
         
         # Флаг, который говорит о том решена ли М-задача
         self.is_m_solved_: bool = is_m_solved
     
         # Флаг, который говорит о том решена ли обычная задача
         self.is_solved: bool = is_solved
+
+    def get_cond(self):
+        return self.Info_.cond_
 
 
 class Answer:
