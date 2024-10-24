@@ -113,7 +113,7 @@ def get_allowed_rows(obj: Transport, **kwargs) -> tuple[int, int, int]:
     min_index = get_col_row(A0=A0_, mtx=mtx_, allowed_cols_indexes=kwargs['cols'])
 
     if min_index.shape[0] == 1:
-        return tuple(min_index[0], min_index[1], 0)
+        return tuple([min_index[0][0], min_index[0][1], 0])
 
     if min_index.shape[0] > 1:
         # Получаем только индексы столбцов
