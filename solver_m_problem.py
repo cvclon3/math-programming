@@ -59,15 +59,16 @@ def get_allowed_cols(obj: Transport) -> tuple[np.ndarray, int]:
 
     if obj.get_cond() == 'min':
         allowed_cols_index_ = np.argwhere(ref_plan.imag == np.max(ref_plan.imag))
-        print(ref_plan, "12")
-        # if ref_plan[allowed_cols_index_] < 0:
-        #     err_ = 11
+        for j in range(allowed_cols_index_.shape[0]):
+            if ref_plan[allowed_cols_index_[j]] < 0:
+                err_ = 11
 
     elif obj.get_cond() == 'max':
         allowed_cols_index_ = np.where(ref_plan.imag == np.min(ref_plan.imag))[0]
 
-        # if ref_plan[allowed_cols_index_] > 0:
-        #     err_ = 12
+        for j in range(allowed_cols_index_.shape[0]):
+            if ref_plan[allowed_cols_index_[j]] > 0:
+                err_ = 12
 
     return tuple([allowed_cols_index_, err_])
 
@@ -148,7 +149,7 @@ def get_col_row(A0: np.ndarray, mtx: np.ndarray, allowed_cols_indexes: np.ndarra
 
     for i in range(allowed_cols_indexes.shape[0]):
         if allowed_cols_indexes[i] == i:
-            all_simplex_res[i] = np.full(shape=(A0.shape[1],), fill_value=np.inf)
+            all_simplex_res[i] = np.full(shape=(A0.shape[0],), fill_value=np.inf)
         else:
             all_simplex_res[i] = A0.T / mtx.T[allowed_cols_indexes[i]]
 
