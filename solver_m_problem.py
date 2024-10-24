@@ -54,20 +54,20 @@ def get_allowed_cols(obj: Transport) -> tuple[np.ndarray, int]:
     assert obj.get_cond() == 'min' or obj.get_cond() == 'max', "Error in [M] get_allowed_cols"
 
     table_ = obj.table_.copy()
-    ref_plan = table_[-1]
+    ref_plan = table_[-1, 2:]
     allowed_cols_index_ = -1
 
     if obj.get_cond() == 'min':
-        allowed_cols_index_ = np.where(ref_plan.imag == np.max(ref_plan.imag))[0]
-
-        if ref_plan[allowed_cols_index_] < 0:
-            err_ = 11
+        allowed_cols_index_ = np.argwhere(ref_plan.imag == np.max(ref_plan.imag))
+        print(ref_plan, "12")
+        # if ref_plan[allowed_cols_index_] < 0:
+        #     err_ = 11
 
     elif obj.get_cond() == 'max':
         allowed_cols_index_ = np.where(ref_plan.imag == np.min(ref_plan.imag))[0]
 
-        if ref_plan[allowed_cols_index_] > 0:
-            err_ = 12
+        # if ref_plan[allowed_cols_index_] > 0:
+        #     err_ = 12
 
     return tuple([allowed_cols_index_, err_])
 
@@ -150,14 +150,13 @@ def get_col_row(A0: np.ndarray, mtx: np.ndarray, allowed_cols_indexes: np.ndarra
         if allowed_cols_indexes[i] == i:
             all_simplex_res[i] = np.full(shape=(A0.shape[1],), fill_value=np.inf)
         else:
-            all_simplex_res[i] = A0.T[0] / mtx.T[allowed_cols_indexes[i]]
+            all_simplex_res[i] = A0.T / mtx.T[allowed_cols_indexes[i]]
 
     all_simplex_res = np.where(np.isnan(all_simplex_res), np.inf, all_simplex_res)
     all_simplex_res = np.where(all_simplex_res <= 0, np.inf, all_simplex_res)
 
-    # print(all_simplex_res)
-    min_index = np.argwhere(all_simplex_res == np.min(all_simplex_res))
 
+    min_index = np.argwhere(all_simplex_res == np.min(all_simplex_res))
     for i in range(min_index.shape[0]):
         min_index[i][0] = allowed_cols_indexes[min_index[i][0]]
 
