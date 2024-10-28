@@ -60,14 +60,14 @@ def get_allowed_cols(obj: Transport) -> tuple[np.ndarray, int]:
     if obj.get_cond() == 'min':
         allowed_cols_index_ = np.argwhere(ref_plan.imag == np.max(ref_plan.imag))
         for j in range(allowed_cols_index_.shape[0]):
-            if ref_plan[allowed_cols_index_[j]] < 0:
+            if ref_plan[allowed_cols_index_[j]].imag <= 0:
                 err_ = 11
 
     elif obj.get_cond() == 'max':
         allowed_cols_index_ = np.where(ref_plan.imag == np.min(ref_plan.imag))[0]
 
         for j in range(allowed_cols_index_.shape[0]):
-            if ref_plan[allowed_cols_index_[j]] > 0:
+            if ref_plan[allowed_cols_index_[j]].imag >= 0:
                 err_ = 12
 
     return tuple([allowed_cols_index_, err_])
@@ -148,13 +148,15 @@ def get_col_row(A0: np.ndarray, mtx: np.ndarray, allowed_cols_indexes: np.ndarra
     # print(all_simplex_res)
 
     for i in range(allowed_cols_indexes.shape[0]):
-        if allowed_cols_indexes[i] == i:
-            all_simplex_res[i] = np.full(shape=(A0.shape[0],), fill_value=np.inf)
-        else:
-            all_simplex_res[i] = A0.T / mtx.T[allowed_cols_indexes[i]]
+        # if allowed_cols_indexes[i] == i:
+        #     all_simplex_res[i] = np.full(shape=(A0.shape[0],), fill_value=np.inf)
+        # else:
+        #     all_simplex_res[i] = A0.T / mtx.T[allowed_cols_indexes[i]]
+        all_simplex_res[i] = A0.T / mtx.T[allowed_cols_indexes[i]]
 
     all_simplex_res = np.where(np.isnan(all_simplex_res), np.inf, all_simplex_res)
-    all_simplex_res = np.where(all_simplex_res <= 0, np.inf, all_simplex_res)
+    # ВОТ ТУТ
+    all_simplex_res = np.where(all_simplex_res < 0, np.inf, all_simplex_res)
 
 
     min_index = np.argwhere(all_simplex_res == np.min(all_simplex_res))
@@ -172,13 +174,15 @@ def get_col_row_2(mtx: np.ndarray, allowed_cols_indexes: np.ndarray) -> np.ndarr
 
     for i in range(allowed_cols_indexes.shape[0]):
         for j in range(mtx.shape[1]):
-            if allowed_cols_indexes[i] == j:
-                all_simplex_res[i, j] = np.full(shape=(mtx.shape[0],), fill_value=np.inf)
-            else:
-                all_simplex_res[i, j] = mtx.T[j]/mtx.T[allowed_cols_indexes[i]]
+            # if allowed_cols_indexes[i] == j:
+            #     all_simplex_res[i, j] = np.full(shape=(mtx.shape[0],), fill_value=np.inf)
+            # else:
+            #     all_simplex_res[i, j] = mtx.T[j]/mtx.T[allowed_cols_indexes[i]]
+            all_simplex_res[i, j] = mtx.T[j]/mtx.T[allowed_cols_indexes[i]]
 
     all_simplex_res = np.where(np.isnan(all_simplex_res), np.inf, all_simplex_res)
-    all_simplex_res = np.where(all_simplex_res <= 0, np.inf, all_simplex_res)
+    # И ВОТ ТУТ!!!!
+    all_simplex_res = np.where(all_simplex_res < 0, np.inf, all_simplex_res)
 
     # print(all_simplex_res)
     min_index = np.argwhere(all_simplex_res == np.min(all_simplex_res))
