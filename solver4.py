@@ -73,7 +73,7 @@ class Solver:
         # Условия задачи
         self.data_ = data
         
-        # Массив содержащий итерации (транспортные классы) - массив ответов
+        # Массив содержащий итерации (тра n нспортные классы) - массив ответов
         self.solution_: np.array[Transport] = np.array(prepare_data(data=self.data_))
 
     def solve(self) -> Answer:

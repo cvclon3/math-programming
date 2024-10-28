@@ -199,7 +199,7 @@ def prepare_data(data: Data) -> Transport:
     mtx = delta_i(mtx)
     print(mtx)
 
-    res = Transport(info=info, table=mtx)
+    res = Transport(info=info, table=mtx, answer=baseI_in_extended_mtx)
 
     return res
 

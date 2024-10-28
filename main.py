@@ -11,7 +11,7 @@ Ai = np.array([
 ])
 
 Bi = np.array([2, 8, 1])
-Symb = np.array(['=', '=', '='])
+Symb = np.array(['<=', '>=', '>='])
 Cond = 'min'
 
 Zi = np.array([3, 2, 3])
@@ -21,9 +21,23 @@ np.set_printoptions(threshold=np.inf, linewidth=np.inf)
 
 data = s.Data(Ai, Bi, Zi, Symb, Cond)
 
-trans = prepare_data(data)
+transp = prepare_data(data)
 
-min_colls_i, err = sm.get_allowed_cols(trans)
-print(min_colls_i)
-coll_i, row_i, err = sm.get_allowed_rows(trans, cols=min_colls_i)
-print(coll_i, row_i)
+print("START")
+while not sm.is_m_solved(obj=transp):
+    min_colls_i, err = sm.get_allowed_cols(transp)
+    # print(min_colls_i)
+    coll_i, row_i, err = sm.get_allowed_rows(transp, cols=min_colls_i)
+    # print(coll_i, row_i)
+    transp = sm.New_Table_(obj=transp, row=row_i, col=coll_i)
+
+    print(transp.table_.real)
+print(transp.answer_)
+
+    
+
+optimal_plan = np.zeros(transp.table_.shape[1] - 2)
+for i in range(transp.answer_.shape[0]):
+    optimal_plan[transp.answer_[i]] = transp.table_[1:-1, 1][i]
+    
+print(optimal_plan)

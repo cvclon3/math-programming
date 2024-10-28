@@ -187,3 +187,58 @@ def get_col_row_2(mtx: np.ndarray, allowed_cols_indexes: np.ndarray) -> np.ndarr
         min_index[i][0] = allowed_cols_indexes[min_index[i][0]]
 
     return min_index
+
+
+# def New_Table_(arr, Stb, Str, ansver):
+#     table = arr.copy()
+#     ans = ansver.copy()
+
+#     table[Str + 1][0] = arr[0][Stb + 2]
+
+
+#     table[Str + 1][1:] /= table[Str + 1][Stb + 2]
+#     for i in range(1, table.shape[0]):
+#         if i == Str + 1:
+#             continue
+#         for j in range(table.shape[1] - 1):
+#             if j == Stb + 1:
+#                 table[i][j + 1] = 0
+#                 continue
+#             table[i][j + 1] = arr[i][j + 1] - arr[Str + 1][j + 1] * arr[i][Stb + 2] / arr[Str + 1][Stb + 2]
+
+
+#     if arr[Str + 1][0].imag != 0:
+#         table[-1][ans[Str] + 2] = 0
+#     ans[Str] = Stb
+
+
+#     return table
+
+
+def New_Table_(obj: Transport, **kwargs):
+    table = obj.table_.copy()
+    ans = obj.answer_.copy()
+    row = kwargs['row']
+    col = kwargs['col']
+    
+    table[row + 1][0] = obj.table_[0][col + 2]
+
+
+    table[row + 1][1:] /= table[row + 1][col + 2]
+    for i in range(1, table.shape[0]):
+        if i == row + 1:
+            continue
+        for j in range(table.shape[1] - 1):
+            if j == col + 1:
+                table[i][j + 1] = 0
+                continue
+            table[i][j + 1] = obj.table_[i][j + 1] - obj.table_[row + 1][j + 1] * obj.table_[i][col + 2] / obj.table_[row + 1][col + 2]
+
+
+    if obj.table_[row + 1][0].imag != 0:
+        table[-1][ans[row] + 2] = 0
+    ans[row] = col
+    
+    new_tranport = Transport(info=obj.Info_, table=table, answer=ans)
+
+    return new_tranport
