@@ -37,12 +37,15 @@ class Transport:
     Транспортный класс для таблицы - матрицы
     Также содержит флаги, которые говорят о том решена ли М-задача и обычная задача
     '''
-    def __init__(self, info: Info, table: np.ndarray, is_m_solved: bool = False, is_solved: bool = False):
+    def __init__(self, info: Info, table: np.ndarray, answer: np.ndarray, is_m_solved: bool = False, is_solved: bool = False):
         # Условие задачи (min or max)
         self.Info_ = info
 
         # Таблица - матрица
         self.table_: np.ndarray = table
+
+        # Вектор ответов
+        self.answer_: np.ndarray = answer
         
         # Флаг, который говорит о том решена ли М-задача
         self.is_m_solved_: bool = is_m_solved
