@@ -24,3 +24,17 @@ Symb = np.array(['<=', '>=', '>='])
 Cond = 'min'
 
 Zi = np.array([3, 12, 3])
+
+
+[PROBLEM 3]
+Ai = np.array([
+    [12, 11, 11],
+    [3, 8, 2],
+    [10, 2, 1],
+])
+
+Bi = np.array([2, 8, 1])
+Symb = np.array(['<=', '>=', '>='])
+Cond = 'min'
+
+Zi = np.array([3, 12, 3])
