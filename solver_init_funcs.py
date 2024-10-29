@@ -36,7 +36,7 @@ def find_base_x(mtx):
         for j in range(cols_size):
             # Если элемент не равен 0 и не равен 1, заменяем его на бесконечность
             if mtx[i, j] != 0 and mtx[i, j] != 1:
-                mtx_[i, j] = np.inf
+                mtx_[i, j] = 2
     # Транспонируем матрицу
     mtx_ = mtx_.T
 
@@ -199,7 +199,7 @@ def prepare_data(data: Data) -> Transport:
     mtx = delta_i(mtx)
     print(mtx)
 
-    res = Transport(info=info, table=mtx)
+    res = Transport(info=info, table=mtx, answer=baseI_in_extended_mtx)
 
     return res
 

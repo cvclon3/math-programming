@@ -8,54 +8,45 @@ TODO:
 
 '''
 https://habr.com/ru/articles/474286/
-Замечание: Фактически, мы выражаем старые базисные переменные из каждого уравнения системы 
-ограничений через остальные переменные и смотрим, в каком уравнении возрастание новой базисной 
-переменной быстрее всего даст 0. Попадание в такую ситуацию означает, что мы «наткнулись» 
-на новую вершину. Именно поэтому нулевые и отрицательные элементы не рассматриваются, 
-т.к. получение такого результата означает, что выбор такой новой базисной переменной будет 
+Замечание: Фактически, мы выражаем старые базисные переменные из каждого уравнения системы
+ограничений через остальные переменные и смотрим, в каком уравнении возрастание новой базисной
+переменной быстрее всего даст 0. Попадание в такую ситуацию означает, что мы «наткнулись»
+на новую вершину. Именно поэтому нулевые и отрицательные элементы не рассматриваются,
+т.к. получение такого результата означает, что выбор такой новой базисной переменной будет
 уводить нас из области, вне которой решений не существует.
 
 
-Поскольку в последнем столбце присутствует несколько минимальных элементов 1, то номер 
-строки выбираем по правилу Креко. Метод Креко заключается в следующем. Элементы строк, 
-имеющие одинаковые наименьшие значения min=1, делятся на предполагаемые разрешающие элементы, 
-а результаты заносятся в дополнительные строки. За ведущую строку выбирается та, в которой 
+Поскольку в последнем столбце присутствует несколько минимальных элементов 1, то номер
+строки выбираем по правилу Креко. Метод Креко заключается в следующем. Элементы строк,
+имеющие одинаковые наименьшие значения min=1, делятся на предполагаемые разрешающие элементы,
+а результаты заносятся в дополнительные строки. За ведущую строку выбирается та, в которой
 раньше встретится наименьшее частное при чтении таблицы слева направо по столбцам.
 '''
 
-
-# def get_allowed_indexes(obj: Transport) -> tuple[int, int, int]:
-#     '''
-#     # Возвращаем номер разрешающего столбца!!!!!!
-#
-#     Коды ошибок:
-#     0 - OK
-#     1 - М задача
-#     '''
-#     if is_m_solved(obj):
-#         return tuple([-1, -1, 1])
-#
-#     err_ = 0
-#
-#     allowed_cols_indexes_, err_ = get_allowed_cols(obj=obj)
-#
-#     allowed_rows_index_, allowed_cols_index_, err_ = get_allowed_rows(obj=obj, cols=allowed_cols_indexes_)
-#
-#     return tuple([0, 0, 0])
-
-
-def is_m_solved(obj: Transport) -> bool:
+def is_s_solved(obj: Transport) -> bool:
     '''
-    Проверяем решена ли М задача
+    Проверяем решена ли симплекс задача
     '''
     table_ = obj.table_.copy()
 
-    # C[b] - C с индексом b
-    ref_plan = table_[1:-1, 0]
+    # Индексная строка
+    ref_plan = table_[-1, 2:]
+
+    assert obj.get_cond() == 'min' or obj.get_cond() == 'max', "Error in [S] is_s_solved"
+
+    if obj.get_cond() == 'min':
+        for i in range(ref_plan.shape[0]):
+            if ref_plan[i].imag == 0 and ref_plan[i].real > 0:
+                return False
+
+    elif obj.get_cond() == 'max':
+        for i in range(ref_plan.shape[0]):
+            if ref_plan[i].imag == 0 and ref_plan[i].real < 0:
+                return False
 
     # Если в опорном плане не содержится комплексных переменных - М переменных
     # то это значит что М задача решена
-    return np.sum(np.abs(ref_plan.imag)) == 0
+    return True
 
 
 def get_allowed_cols(obj: Transport) -> tuple[np.ndarray, int]:
@@ -75,16 +66,16 @@ def get_allowed_cols(obj: Transport) -> tuple[np.ndarray, int]:
     allowed_cols_index_ = -1
 
     if obj.get_cond() == 'min':
-        allowed_cols_index_ = np.argwhere(ref_plan.imag == np.max(ref_plan.imag))
+        allowed_cols_index_ = np.argwhere(ref_plan.real == np.max(ref_plan.real))
         for j in range(allowed_cols_index_.shape[0]):
-            if ref_plan[allowed_cols_index_[j]].imag <= 0:
+            if ref_plan[allowed_cols_index_[j]].real <= 0:
                 err_ = 11
 
     elif obj.get_cond() == 'max':
-        allowed_cols_index_ = np.where(ref_plan.imag == np.min(ref_plan.imag))[0]
+        allowed_cols_index_ = np.where(ref_plan.real == np.min(ref_plan.real))[0]
 
         for j in range(allowed_cols_index_.shape[0]):
-            if ref_plan[allowed_cols_index_[j]].imag >= 0:
+            if ref_plan[allowed_cols_index_[j]].real >= 0:
                 err_ = 12
 
     return tuple([allowed_cols_index_, err_])
@@ -252,7 +243,7 @@ def kreco_rule(min_index: np.ndarray, mtx: np.ndarray) -> np.ndarray:
 
     for i in range(min_index.shape[0]):
         for j in range(mtx.shape[1]):
-            kreco[i, j] = mtx[min_index[i, 1], j]/mtx[min_index[i, 1], min_index[i, 0]]
+            kreco[i, j] = mtx[min_index[i, 1], j] / mtx[min_index[i, 1], min_index[i, 0]]
 
     kreco = np.where(np.isnan(kreco), np.inf, kreco)
     kreco = np.where(kreco <= 0, np.inf, kreco)
@@ -283,14 +274,15 @@ def New_Table_(obj: Transport, **kwargs):
             if j == col + 1:
                 table[i][j + 1] = 0
                 continue
-            table[i][j + 1] = obj.table_[i][j + 1] - obj.table_[row + 1][j + 1] * obj.table_[i][col + 2] / obj.table_[row + 1][col + 2]
+            table[i][j + 1] = obj.table_[i][j + 1] - obj.table_[row + 1][j + 1] * obj.table_[i][col + 2] / \
+                              obj.table_[row + 1][col + 2]
 
     table[row + 1][0] = obj.table_[0][col + 2]
 
     # if obj.table_[row + 1][0].imag != 0:
     #     table[-1][ans[row] + 2] = 0
     ans[row] = col
-    
+
     new_tranport = Transport(info=obj.Info_, table=table, answer=ans)
 
     return new_tranport
