@@ -1,12 +1,12 @@
 # [EN]
-# math-programming
+# math-programming (in dev)
 
 ### Authors: [@Yuki-AnSi](https://github.com/Yuki-AnSi) (maintainer), [@cvclon3](https://github.com/cvclon3)
 
 ### SOON...
 
 # [RU]
-# математическое-программирование
+# математическое-программирование (в разработке)
 
 ### Авторы (помимо умных дядек, придумавших эти методы): 
 + [@Yuki-AnSi](https://github.com/Yuki-AnSi) - без него бы ничего не было)
