@@ -199,33 +199,6 @@ def get_col_row(A0_: np.ndarray, mtx_: np.ndarray, allowed_cols_indexes_: np.nda
     # print(f'all_simplex_res1 : {all_simplex_res.real}')
     # print(f'min_index1 : {min_index}')
 
-
-    # if len(set(min_index[:, 0])) == 1:
-    #
-    #     # print("AAAAAAAA")
-    #     min_index_old = min_index.copy()
-    #
-    #     for i in range(min_index.shape[0]):
-    #         min_index[i, 0] = allowed_cols_indexes[min_index[i, 0]]
-    #
-    #     kreco_rule = np.zeros(shape=(min_index.shape[0], mtx.shape[1]), dtype=np.complex128)
-    #     for i in range(min_index.shape[0]):
-    #         kreco_rule[i] = mtx[min_index[i, 1]] / mtx[min_index[i, 0], min_index[i, 1]]
-    #
-    #     kreco_rule = np.where(np.isnan(kreco_rule), np.inf, kreco_rule)
-    #     kreco_rule = np.where(kreco_rule <= 0, np.inf, kreco_rule)
-    #
-    #     for j in range(kreco_rule.shape[1]):
-    #         kreco_rule_min_index = np.where(kreco_rule == np.min(kreco_rule[:, j]))[0]
-    #         if kreco_rule_min_index.shape[0] == 1:
-    #             print('AAAAAA', [min_index[j, 0], min_index_old[kreco_rule_min_index[0], 1]])
-    #             return np.array([min_index[j, 0], min_index_old[kreco_rule_min_index[0], 1]])
-    #
-    #     return np.array([-1, -1])
-    #     # for i in range(allowed_cols_indexes.shape[0]):
-    #     #     all_simplex_res[i] = all_simplex_res[i] / mtx.T[allowed_cols_indexes[i]]
-
-
     # min_elem = np.min(all_simplex_res.real)
     min_index = np.argwhere(all_simplex_res == min_elem)
 
@@ -238,39 +211,42 @@ def get_col_row(A0_: np.ndarray, mtx_: np.ndarray, allowed_cols_indexes_: np.nda
     return min_index
 
 
-def get_col_row_2(mtx: np.ndarray, allowed_cols_indexes: np.ndarray) -> np.ndarray:
-
-    all_simplex_res = np.zeros(shape=(allowed_cols_indexes.shape[0], mtx.shape[1], mtx.shape[0]), dtype=np.complex128)
-
-    # print(all_simplex_res)
-
-    for i in range(allowed_cols_indexes.shape[0]):
-        for j in range(mtx.shape[1]):
-            # for k in range(mtx.shape[0]):
-            # if allowed_cols_indexes[i] == j:
-            #     all_simplex_res[i, j] = np.full(shape=(mtx.shape[0],), fill_value=np.inf)
-            # else:
-            #     all_simplex_res[i, j] = mtx.T[j]/mtx.T[allowed_cols_indexes[i]]
-            all_simplex_res[i, j] = mtx.T[j]/mtx.T[allowed_cols_indexes[i]]
-
-    all_simplex_res = np.where(np.isnan(all_simplex_res), np.inf, all_simplex_res)
-    # И ВОТ ТУТ!!!!
-    all_simplex_res = np.where(all_simplex_res < +0, np.inf, all_simplex_res)
-
-    min_elem = np.min(all_simplex_res)
-    if np.isinf(min_elem):
-        return np.array([-1, -1, -1])
-
-    print(f'all_simplex_res2 :\n {all_simplex_res.real}')
-    min_index = np.argwhere(all_simplex_res == min_elem)
-
-    for i in range(min_index.shape[0]):
-        min_index[i, 0] = allowed_cols_indexes[min_index[i, 0]]
-
-    return min_index
+# def get_col_row_2(mtx: np.ndarray, allowed_cols_indexes: np.ndarray) -> np.ndarray:
+#
+#     all_simplex_res = np.zeros(shape=(allowed_cols_indexes.shape[0], mtx.shape[1], mtx.shape[0]), dtype=np.complex128)
+#
+#     # print(all_simplex_res)
+#
+#     for i in range(allowed_cols_indexes.shape[0]):
+#         for j in range(mtx.shape[1]):
+#             # for k in range(mtx.shape[0]):
+#             # if allowed_cols_indexes[i] == j:
+#             #     all_simplex_res[i, j] = np.full(shape=(mtx.shape[0],), fill_value=np.inf)
+#             # else:
+#             #     all_simplex_res[i, j] = mtx.T[j]/mtx.T[allowed_cols_indexes[i]]
+#             all_simplex_res[i, j] = mtx.T[j]/mtx.T[allowed_cols_indexes[i]]
+#
+#     all_simplex_res = np.where(np.isnan(all_simplex_res), np.inf, all_simplex_res)
+#     # И ВОТ ТУТ!!!!
+#     all_simplex_res = np.where(all_simplex_res < +0, np.inf, all_simplex_res)
+#
+#     min_elem = np.min(all_simplex_res)
+#     if np.isinf(min_elem):
+#         return np.array([-1, -1, -1])
+#
+#     print(f'all_simplex_res2 :\n {all_simplex_res.real}')
+#     min_index = np.argwhere(all_simplex_res == min_elem)
+#
+#     for i in range(min_index.shape[0]):
+#         min_index[i, 0] = allowed_cols_indexes[min_index[i, 0]]
+#
+#     return min_index
 
 
 def kreco_rule(min_index: np.ndarray, mtx: np.ndarray) -> np.ndarray:
+    '''
+    Ищем функции по правилу
+    '''
 
     kreco = np.zeros(shape=(min_index.shape[0], mtx.shape[1]), dtype=np.complex128)
 
@@ -291,34 +267,6 @@ def kreco_rule(min_index: np.ndarray, mtx: np.ndarray) -> np.ndarray:
         print(f'j : {kreco[:, j].real}')
 
     return None
-
-
-
-
-# def New_Table_(arr, Stb, Str, ansver):
-#     table = arr.copy()
-#     ans = ansver.copy()
-
-#     table[Str + 1][0] = arr[0][Stb + 2]
-
-
-#     table[Str + 1][1:] /= table[Str + 1][Stb + 2]
-#     for i in range(1, table.shape[0]):
-#         if i == Str + 1:
-#             continue
-#         for j in range(table.shape[1] - 1):
-#             if j == Stb + 1:
-#                 table[i][j + 1] = 0
-#                 continue
-#             table[i][j + 1] = arr[i][j + 1] - arr[Str + 1][j + 1] * arr[i][Stb + 2] / arr[Str + 1][Stb + 2]
-
-
-#     if arr[Str + 1][0].imag != 0:
-#         table[-1][ans[Str] + 2] = 0
-#     ans[Str] = Stb
-
-
-#     return table
 
 
 def New_Table_(obj: Transport, **kwargs):
