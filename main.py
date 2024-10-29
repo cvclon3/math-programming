@@ -7,11 +7,11 @@ import solver_init_funcs
 Ai = np.array([
     [2, 1, 1],
     [3, 8, 2],
-    [0, 1, 1],
+    [10, 2, 1],
 ])
 
 Bi = np.array([2, 8, 1])
-Symb = np.array(['<=', '=', '>='])
+Symb = np.array(['<=', '>=', '>='])
 Cond = 'min'
 
 Zi = np.array([3, 12, 3])
