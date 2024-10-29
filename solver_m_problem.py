@@ -6,6 +6,23 @@ TODO:
 - доделать функцию проверки столбца на условие ограниченности
 '''
 
+'''
+https://habr.com/ru/articles/474286/
+Замечание: Фактически, мы выражаем старые базисные переменные из каждого уравнения системы 
+ограничений через остальные переменные и смотрим, в каком уравнении возрастание новой базисной 
+переменной быстрее всего даст 0. Попадание в такую ситуацию означает, что мы «наткнулись» 
+на новую вершину. Именно поэтому нулевые и отрицательные элементы не рассматриваются, 
+т.к. получение такого результата означает, что выбор такой новой базисной переменной будет 
+уводить нас из области, вне которой решений не существует.
+
+
+Поскольку в последнем столбце присутствует несколько минимальных элементов 1, то номер 
+строки выбираем по правилу Креко. Метод Креко заключается в следующем. Элементы строк, 
+имеющие одинаковые наименьшие значения min=1, делятся на предполагаемые разрешающие элементы, 
+а результаты заносятся в дополнительные строки. За ведущую строку выбирается та, в которой 
+раньше встретится наименьшее частное при чтении таблицы слева направо по столбцам.
+'''
+
 
 # def get_allowed_indexes(obj: Transport) -> tuple[int, int, int]:
 #     '''
@@ -34,7 +51,7 @@ def is_m_solved(obj: Transport) -> bool:
     table_ = obj.table_.copy()
 
     # Опорный план
-    ref_plan = table_[-1]
+    ref_plan = table_[1:-1, 0]
 
     # Если в опорном плане не содержится комплексных переменных - М переменных
     # то это значит что М задача решена
@@ -105,13 +122,16 @@ def get_allowed_rows(obj: Transport, **kwargs) -> tuple[int, int, int]:
         '''
     table_ = obj.table_.copy()
     A0_ = table_[1:-1, 1].copy()
-    mtx_ = table_[1:-1, 2:]
+    mtx_ = table_[1:-1, 2:].copy()
 
     assert obj.get_cond() == 'min' or obj.get_cond() == 'max', "Error in [M] get_allowed_rows"
 
     # Ошибка 23
     # Возникает здесь
-    min_index = get_col_row(A0=A0_, mtx=mtx_, allowed_cols_indexes=kwargs['cols'])
+    min_index = get_col_row(A0_=A0_, mtx_=mtx_, allowed_cols_indexes_=kwargs['cols'])
+
+    # min_index = min_index[0]
+    # return tuple([min_index[0], min_index[1], 0])
 
     if min_index.shape[0] == 1:
         return tuple([min_index[0][0], min_index[0][1], 0])
@@ -138,37 +158,62 @@ def get_allowed_rows(obj: Transport, **kwargs) -> tuple[int, int, int]:
         return tuple([-1, -1, 23])
 
 
-def get_col_row(A0: np.ndarray, mtx: np.ndarray, allowed_cols_indexes: np.ndarray) -> np.ndarray:
+def get_col_row(A0_: np.ndarray, mtx_: np.ndarray, allowed_cols_indexes_: np.ndarray) -> np.ndarray:
     '''
     Код для поиска разрешающей строки
     Возвращает пары чисел - столбец,строка
     '''
-    all_simplex_res = np.zeros(shape=(allowed_cols_indexes.shape[0], A0.shape[0]))
+    A0: np.ndarray = A0_.copy()
+    mtx: np.ndarray = mtx_.copy()
+    allowed_cols_indexes: np.ndarray = allowed_cols_indexes_.copy()
+
+    all_simplex_res = np.zeros(shape=(allowed_cols_indexes.shape[0], A0.shape[0]), dtype=np.complex128)
 
     # print(all_simplex_res)
 
     for i in range(allowed_cols_indexes.shape[0]):
-        # if allowed_cols_indexes[i] == i:
-        #     all_simplex_res[i] = np.full(shape=(A0.shape[0],), fill_value=np.inf)
-        # else:
-        #     all_simplex_res[i] = A0.T / mtx.T[allowed_cols_indexes[i]]
-        all_simplex_res[i] = A0.T / mtx.T[allowed_cols_indexes[i]]
+        for j in range(A0.shape[0]):
+            if A0.T[j] == 0 and mtx.T[allowed_cols_indexes[i], j] > 0:
+                all_simplex_res[i, j] = 1e-6
+            elif A0.T[j] == 0 and mtx.T[allowed_cols_indexes[i], j] < 0:
+                all_simplex_res[i, j] = np.inf
+            else:
+                all_simplex_res[i, j] = A0.T[j] / mtx.T[allowed_cols_indexes[i], j]
 
     all_simplex_res = np.where(np.isnan(all_simplex_res), np.inf, all_simplex_res)
-    # ВОТ ТУТ
+    # ВОТ ТУТ было <=
+    # all_simplex_res = np.where(all_simplex_res <= 0, np.inf, all_simplex_res)
     all_simplex_res = np.where(all_simplex_res < 0, np.inf, all_simplex_res)
+    all_simplex_res = np.where(all_simplex_res <= -0, np.inf, all_simplex_res)
 
+    min_elem = np.min(all_simplex_res.real)
+    if np.isinf(min_elem):
+        return np.array([-1, -1])
 
-    min_index = np.argwhere(all_simplex_res == np.min(all_simplex_res))
+    min_index = np.argwhere(all_simplex_res == min_elem)
+    # print(f'all_simplex_res1 : {all_simplex_res.real}')
+    # print(f'min_index1 : {min_index}')
+
+    if min_index.shape[0] > 1:
+        # print("AAAAAAAA")
+        for i in range(allowed_cols_indexes.shape[0]):
+            all_simplex_res[i] = all_simplex_res[i] / mtx.T[allowed_cols_indexes[i]]
+
+    min_elem = np.min(all_simplex_res.real)
+    min_index = np.argwhere(all_simplex_res == min_elem)
+
+    print(f'all_simplex_res1 : {all_simplex_res.real}')
+    print(f'min_index1 : {min_index}')
+
     for i in range(min_index.shape[0]):
-        min_index[i][0] = allowed_cols_indexes[min_index[i][0]]
+        min_index[i, 0] = allowed_cols_indexes[min_index[i, 0]]
 
     return min_index
 
 
 def get_col_row_2(mtx: np.ndarray, allowed_cols_indexes: np.ndarray) -> np.ndarray:
 
-    all_simplex_res = np.zeros(shape=(allowed_cols_indexes.shape[0], mtx.shape[1], mtx.shape[0]))
+    all_simplex_res = np.zeros(shape=(allowed_cols_indexes.shape[0], mtx.shape[1], mtx.shape[0]), dtype=np.complex128)
 
     # print(all_simplex_res)
 
@@ -182,13 +227,17 @@ def get_col_row_2(mtx: np.ndarray, allowed_cols_indexes: np.ndarray) -> np.ndarr
 
     all_simplex_res = np.where(np.isnan(all_simplex_res), np.inf, all_simplex_res)
     # И ВОТ ТУТ!!!!
-    all_simplex_res = np.where(all_simplex_res < 0, np.inf, all_simplex_res)
+    all_simplex_res = np.where(all_simplex_res < +0, np.inf, all_simplex_res)
 
-    # print(all_simplex_res)
-    min_index = np.argwhere(all_simplex_res == np.min(all_simplex_res))
+    min_elem = np.min(all_simplex_res)
+    if np.isinf(min_elem):
+        return np.array([-1, -1, -1])
+
+    print(f'all_simplex_res2 :\n {all_simplex_res.real}')
+    min_index = np.argwhere(all_simplex_res == min_elem)
 
     for i in range(min_index.shape[0]):
-        min_index[i][0] = allowed_cols_indexes[min_index[i][0]]
+        min_index[i, 0] = allowed_cols_indexes[min_index[i, 0]]
 
     return min_index
 
@@ -224,9 +273,6 @@ def New_Table_(obj: Transport, **kwargs):
     ans = obj.answer_.copy()
     row = kwargs['row']
     col = kwargs['col']
-    
-    table[row + 1][0] = obj.table_[0][col + 2]
-
 
     table[row + 1][1:] /= table[row + 1][col + 2]
     for i in range(1, table.shape[0]):
@@ -238,9 +284,10 @@ def New_Table_(obj: Transport, **kwargs):
                 continue
             table[i][j + 1] = obj.table_[i][j + 1] - obj.table_[row + 1][j + 1] * obj.table_[i][col + 2] / obj.table_[row + 1][col + 2]
 
+    table[row + 1][0] = obj.table_[0][col + 2]
 
-    if obj.table_[row + 1][0].imag != 0:
-        table[-1][ans[row] + 2] = 0
+    # if obj.table_[row + 1][0].imag != 0:
+    #     table[-1][ans[row] + 2] = 0
     ans[row] = col
     
     new_tranport = Transport(info=obj.Info_, table=table, answer=ans)
